@@ -1,0 +1,14 @@
+flags: {}
+extra-package-dbs: []
+packages:
+- '.'
+extra-deps:
+- aeson-0.9.0.1
+- haskell-src-exts-1.16.0.1
+- parsec-3.1.9
+- ref-tf-0.4
+- reflex-0.4.0
+- reflex-dom-0.3
+- syb-0.5.1
+- text-1.2.2.1
+resolver: nightly-2016-05-17
