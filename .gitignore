@@ -3,3 +3,5 @@
 *.js_ho
 *.js_o
 *.jsexe
+*.js_dyn_hi
+*.js_dyn_o
