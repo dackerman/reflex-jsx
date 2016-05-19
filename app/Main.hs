@@ -11,17 +11,19 @@ import JSXParser
 import JSXQuoter
 
 import qualified Data.List as List
+import qualified Data.Map as Map
+
 import Control.Monad (sequence_)
 import Control.Applicative ((*>))
 
 main = mainWidget $ do
   let someBoundVariable = "This is bound at compile time!"
   renderJsx [jsx|
-                <div>
+                <div class="blah" style="background-color:red">
                   <span>testing span</span>
                   <div />
                   Outside the div
-                  <div>{someBoundVariable}</div>
+                  <div style="background-color:green">{someBoundVariable}</div>
                 </div>
                 |]
 
@@ -31,6 +33,7 @@ printJsxRep node = text $ show node
 renderJsx :: MonadWidget t m => Node -> m ()
 renderJsx node = do
   case node of
-    Node tag children -> let renderedChildren = List.map renderJsx children
-                         in el tag $ sequence_ renderedChildren
+    Node tag attrs children -> let renderedChildren = List.map renderJsx children
+                                   attributeMap = Map.fromList attrs
+                               in elAttr tag attributeMap $ sequence_ renderedChildren
     Text content -> text content

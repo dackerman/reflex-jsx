@@ -6,16 +6,18 @@ module JSXParser
        , Node(..)
        ) where
 
-import Text.Parsec (runParser, Parsec, try, eof, many, many1)
-import Text.Parsec.Char (char, letter, noneOf, string)
-import Text.ParserCombinators.Parsec.Char (alphaNum, spaces)
+import Text.Parsec (runParser, Parsec, try, eof, many, many1, between)
+import Text.Parsec.Char (char, letter, noneOf, string, anyChar, alphaNum, spaces)
 
 import Data.Typeable
 import Data.Data
+import qualified Data.Map as Map
 
 import Control.Applicative ((<|>))
 
-data Node = Node String [Node]
+type Attrs = [(String, String)]
+
+data Node = Node String Attrs [Node]
           | Text String
           | FreeVar String
            deriving (Show,Typeable,Data)
@@ -37,6 +39,7 @@ parseJsx s =
 jsxParser :: Parsec String u Node
 jsxParser = jsxElement
 
+
 jsxElement :: Parsec String u Node
 jsxElement = do
   try jsxSelfClosingElement <|> jsxNormalElement
@@ -46,24 +49,52 @@ jsxSelfClosingElement :: Parsec String u Node
 jsxSelfClosingElement = do
   char '<'
   name <- jsxElementName
+  attrs <- jsxNodeAttrs
   string "/>"
-  return (Node name [])
+  return (Node name attrs [])
 
 
 jsxNormalElement :: Parsec String u Node
 jsxNormalElement = do
-  name <- jsxOpeningElement
+  (name, attrs) <- jsxOpeningElement
   children <- many jsxChild
   jsxClosingElement name
-  return (Node name children)
+  return (Node name attrs children)
 
 
-jsxOpeningElement :: Parsec String u String
+jsxOpeningElement :: Parsec String u (String, Attrs)
 jsxOpeningElement = do
   char '<'
   name <- jsxElementName
+  attrs <- jsxNodeAttrs
   char '>'
-  return name
+  return (name, attrs)
+
+
+jsxNodeAttrs :: Parsec String u Attrs
+jsxNodeAttrs = do
+  many jsxNodeAttr
+
+
+jsxNodeAttr :: Parsec String u (String, String)
+jsxNodeAttr = do
+  key <- jsxAttributeName
+  spaces
+  char '='
+  spaces
+  value <- jsxQuotedValue
+  spaces
+  return (key, value)
+
+
+jsxAttributeName :: Parsec String u String
+jsxAttributeName = do
+  many $ letter <|> char '-'
+
+
+jsxQuotedValue :: Parsec String u String
+jsxQuotedValue = do
+  between (char '"') (char '"') $ many (noneOf "\"")
 
 
 jsxClosingElement :: String -> Parsec String u ()
