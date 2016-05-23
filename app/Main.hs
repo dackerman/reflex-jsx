@@ -1,10 +1,10 @@
 {-# LANGUAGE  QuasiQuotes #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Text.Parsec (runParser)
 
-import Reflex
 import Reflex.Dom
 
 import JSXParser
@@ -12,28 +12,20 @@ import JSXQuoter
 
 import qualified Data.List as List
 import qualified Data.Map as Map
+import qualified Data.Text as T
 
 import Control.Monad (sequence_)
 import Control.Applicative ((*>))
 
 main = mainWidget $ do
-  let someBoundVariable = "This is bound at compile time!"
-  renderJsx [jsx|
-                <div class="blah" style="background-color:red">
-                  <span>testing span</span>
-                  <div />
-                  Outside the div
-                  <div style="background-color:green">{someBoundVariable}</div>
-                </div>
-                |]
-
-printJsxRep :: MonadWidget t m => Node -> m ()
-printJsxRep node = text $ show node
-
-renderJsx :: MonadWidget t m => Node -> m ()
-renderJsx node = do
-  case node of
-    Node tag attrs children -> let renderedChildren = List.map renderJsx children
-                                   attributeMap = Map.fromList attrs
-                               in elAttr tag attributeMap $ sequence_ renderedChildren
-    Text content -> text content
+  let innerText = elClass "div" "herp" $ do
+        text "This is a widget bound at compile time!"
+        [jsx|<div style="color:white">this is another quasiquoted thing!!!</div>|]
+  [jsx|
+      <div class="blah" style="background-color:red">
+        <span>testing span</span>
+        <div />
+        Outside the div
+        <div style="background-color:blue">{innerText}</div>
+      </div>
+      |]

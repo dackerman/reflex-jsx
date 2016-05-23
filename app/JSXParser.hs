@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE GADTs #-}
 
 module JSXParser
        ( jsxParser
@@ -9,6 +10,8 @@ module JSXParser
 import Text.Parsec (runParser, Parsec, try, eof, many, many1, between)
 import Text.Parsec.Char (char, letter, noneOf, string, anyChar, alphaNum, spaces)
 
+import Reflex.Dom (MonadWidget)
+
 import Data.Typeable
 import Data.Data
 import qualified Data.Map as Map
@@ -17,11 +20,11 @@ import Control.Applicative ((<|>))
 
 type Attrs = [(String, String)]
 
-data Node = Node String Attrs [Node]
-          | Text String
-          | FreeVar String
-           deriving (Show,Typeable,Data)
-
+data Node where
+  Node :: String -> Attrs -> [Node] -> Node
+  Text :: String -> Node
+  FreeVar :: String -> Node
+  Widget :: (MonadWidget t m, Show (m a)) => m a -> Node
 
 parseJsx :: Monad m => String -> m Node
 parseJsx s =

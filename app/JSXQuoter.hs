@@ -5,6 +5,13 @@ module JSXQuoter where
 import Data.Generics
 import qualified Language.Haskell.TH as TH
 import Language.Haskell.TH.Quote
+import Language.Haskell.Meta (parseExp)
+
+import Data.Text as T
+import qualified Data.List as List
+import qualified Data.Map as Map
+
+import Reflex.Dom hiding (Widget)
 
 import JSXParser
 
@@ -16,13 +23,19 @@ jsx = QuasiQuoter
   , quoteType = undefined
   }
 
-quoteJsxExpression s = do
-  exp <- parseJsx s
-  dataToExpQ (const Nothing `extQ` processFreeVars) exp
+
+quoteJsxExpression :: String -> TH.ExpQ
+quoteJsxExpression str = do
+  exp <- parseJsx str
+  outputWidgetCode exp
 
 
-processFreeVars :: Node -> Maybe TH.ExpQ
-processFreeVars (FreeVar varName) =
-  Just [| Text $(TH.varE (TH.mkName varName)) |]
-
-processFreeVars _ = Nothing
+outputWidgetCode :: Node -> TH.ExpQ
+outputWidgetCode node =
+  case node of
+    Node tag attrs children -> let renderedChildren = TH.listE $ List.map outputWidgetCode children
+                               in [| elAttr tag (Map.fromList attrs) $ sequence_ $(renderedChildren) |]
+    Text content -> [| text content |]
+    FreeVar varName -> case parseExp varName of
+      Left error -> fail error
+      Right exp -> return exp
