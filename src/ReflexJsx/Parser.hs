@@ -8,8 +8,6 @@ module ReflexJsx.Parser
 import Text.Parsec (runParser, Parsec, try, eof, many, many1, between)
 import Text.Parsec.Char (char, letter, noneOf, string, alphaNum, spaces)
 
-import qualified Data.Map as Map
-
 import Control.Applicative ((<|>))
 
 
@@ -46,10 +44,10 @@ jsxElement = do
 
 jsxSelfClosingElement :: Parsec String u Node
 jsxSelfClosingElement = do
-  char '<'
+  _ <- char '<'
   name <- jsxElementName
   attrs <- jsxNodeAttrs
-  string "/>"
+  _ <- string "/>"
   return (Node name attrs [])
 
 
@@ -85,7 +83,7 @@ jsxNodeAttr :: Parsec String u (String, AttrValue)
 jsxNodeAttr = do
   key <- jsxAttributeName
   spaces
-  char '='
+  _ <- char '='
   spaces
   value <- jsxQuotedValue <|> jsxSplicedValue
   spaces
@@ -111,9 +109,7 @@ jsxSplicedValue = do
 
 jsxClosingElement :: String -> Parsec String u ()
 jsxClosingElement ele = do
-  string "</"
-  string ele
-  char '>'
+  _ <- string "</" *> string ele *> char '>'
   return ()
 
 

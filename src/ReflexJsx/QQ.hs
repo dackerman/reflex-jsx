@@ -8,13 +8,14 @@ import qualified Language.Haskell.TH as TH
 import Language.Haskell.TH.Quote
 import Language.Haskell.Meta (parseExp)
 
-import Data.Text as T
 import qualified Data.List as List
 import qualified Data.Map as Map
 
-import Reflex.Dom hiding (Widget, Attrs)
+import qualified Reflex.Dom as Dom
 
 import ReflexJsx.Parser
+
+import Prelude hiding (exp)
 
 
 jsx :: QuasiQuoter
@@ -36,7 +37,7 @@ outputWidgetCode :: Node -> TH.ExpQ
 outputWidgetCode node =
   case node of
     Node tag attrs children -> outputNode tag attrs children
-    Text content -> [| text content |]
+    Text content -> [| Dom.text content |]
     SplicedNode varName -> do
       let Right exp = parseExp varName
       return exp
@@ -48,10 +49,10 @@ outputNode tag attrs children =
   in case attrs of
     StaticAttrs staticAttrs ->
       let stringAttrs = TH.listE $ List.map toStringAttr staticAttrs
-      in [| elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
+      in [| Dom.elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
     SplicedAttrs attrExpr -> do
       let Right exp = parseExp attrExpr
-      [| elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
+      [| Dom.elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
 
 
 toStringAttr :: (String, AttrValue) -> TH.ExpQ
