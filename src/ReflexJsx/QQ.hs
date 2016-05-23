@@ -1,6 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module JSXQuoter where
+module ReflexJsx.QQ
+       ( jsx
+       ) where
 
 import Data.Generics
 import qualified Language.Haskell.TH as TH

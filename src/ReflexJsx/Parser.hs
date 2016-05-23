@@ -1,6 +1,5 @@
-module JSXParser
-       ( jsxParser
-       , parseJsx
+module ReflexJsx.Parser
+       ( parseJsx
        , Node(..)
        , Attrs(..)
        , AttrValue(..)
