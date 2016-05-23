@@ -1,10 +1,11 @@
 {-# LANGUAGE DeriveDataTypeable #-}
-{-# LANGUAGE GADTs #-}
 
 module JSXParser
        ( jsxParser
        , parseJsx
        , Node(..)
+       , Attrs
+       , AttrValue(..)
        ) where
 
 import Text.Parsec (runParser, Parsec, try, eof, many, many1, between)
@@ -18,13 +19,15 @@ import qualified Data.Map as Map
 
 import Control.Applicative ((<|>))
 
-type Attrs = [(String, String)]
+data AttrValue = TextVal String
+               | ExprVal String
 
-data Node where
-  Node :: String -> Attrs -> [Node] -> Node
-  Text :: String -> Node
-  FreeVar :: String -> Node
-  Widget :: (MonadWidget t m, Show (m a)) => m a -> Node
+type Attrs = [(String, AttrValue)]
+
+data Node = Node String Attrs [Node]
+          | Text String
+          | FreeVar String
+
 
 parseJsx :: Monad m => String -> m Node
 parseJsx s =
@@ -79,13 +82,13 @@ jsxNodeAttrs = do
   many jsxNodeAttr
 
 
-jsxNodeAttr :: Parsec String u (String, String)
+jsxNodeAttr :: Parsec String u (String, AttrValue)
 jsxNodeAttr = do
   key <- jsxAttributeName
   spaces
   char '='
   spaces
-  value <- jsxQuotedValue
+  value <- jsxQuotedValue <|> jsxSplicedValue
   spaces
   return (key, value)
 
@@ -95,10 +98,15 @@ jsxAttributeName = do
   many $ letter <|> char '-'
 
 
-jsxQuotedValue :: Parsec String u String
+jsxQuotedValue :: Parsec String u AttrValue
 jsxQuotedValue = do
-  between (char '"') (char '"') $ many (noneOf "\"")
+  contents <- between (char '"') (char '"') $ many (noneOf "\"")
+  return $ TextVal contents
 
+jsxSplicedValue :: Parsec String u AttrValue
+jsxSplicedValue = do
+  name <- between (char '{') (char '}') $ many (noneOf "}")
+  return $ ExprVal name
 
 jsxClosingElement :: String -> Parsec String u ()
 jsxClosingElement ele = do
@@ -120,9 +128,7 @@ jsxText = do
 
 jsxFreeVar :: Parsec String u Node
 jsxFreeVar = do
-  char '{'
-  freeVar <- haskellVariableName
-  char '}'
+  freeVar <- between (char '{') (char '}') $ many (noneOf "}")
   return $ FreeVar freeVar
 
 haskellVariableName :: Parsec String u String

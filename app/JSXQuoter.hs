@@ -34,8 +34,18 @@ outputWidgetCode :: Node -> TH.ExpQ
 outputWidgetCode node =
   case node of
     Node tag attrs children -> let renderedChildren = TH.listE $ List.map outputWidgetCode children
-                               in [| elAttr tag (Map.fromList attrs) $ sequence_ $(renderedChildren) |]
+                                   stringAttrs = TH.listE $ List.map toStringAttr attrs
+                               in [| elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
     Text content -> [| text content |]
     FreeVar varName -> case parseExp varName of
       Left error -> fail error
       Right exp -> return exp
+
+
+--                                     (String, String)
+toStringAttr :: (String, AttrValue) -> TH.ExpQ
+toStringAttr (key, value) = case value of
+  TextVal content -> [| (key, content) |]
+  ExprVal exprString -> case parseExp exprString of
+    Left error -> fail error
+    Right exp -> [| (key, $(return exp)) |]
