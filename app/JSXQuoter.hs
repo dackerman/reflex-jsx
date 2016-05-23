@@ -11,7 +11,7 @@ import Data.Text as T
 import qualified Data.List as List
 import qualified Data.Map as Map
 
-import Reflex.Dom hiding (Widget)
+import Reflex.Dom hiding (Widget, Attrs)
 
 import JSXParser
 
@@ -33,14 +33,23 @@ quoteJsxExpression str = do
 outputWidgetCode :: Node -> TH.ExpQ
 outputWidgetCode node =
   case node of
-    Node tag attrs children -> let renderedChildren = TH.listE $ List.map outputWidgetCode children
-                                   stringAttrs = TH.listE $ List.map toStringAttr attrs
-                               in [| elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
+    Node tag attrs children -> outputNode tag attrs children
     Text content -> [| text content |]
     FreeVar varName -> case parseExp varName of
       Left error -> fail error
       Right exp -> return exp
 
+
+outputNode :: String -> Attrs -> [Node] -> TH.ExpQ
+outputNode tag attrs children =
+  let renderedChildren = TH.listE $ List.map outputWidgetCode children
+  in case attrs of
+    StaticAttrs staticAttrs ->
+      let stringAttrs = TH.listE $ List.map toStringAttr staticAttrs
+      in [| elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
+    SplicedAttrs attrExpr -> case parseExp attrExpr of
+      Left error -> fail error
+      Right exp -> [| elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
 
 --                                     (String, String)
 toStringAttr :: (String, AttrValue) -> TH.ExpQ

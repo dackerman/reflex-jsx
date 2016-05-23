@@ -4,7 +4,7 @@ module JSXParser
        ( jsxParser
        , parseJsx
        , Node(..)
-       , Attrs
+       , Attrs(..)
        , AttrValue(..)
        ) where
 
@@ -22,7 +22,8 @@ import Control.Applicative ((<|>))
 data AttrValue = TextVal String
                | ExprVal String
 
-type Attrs = [(String, AttrValue)]
+data Attrs = SplicedAttrs String
+           | StaticAttrs [(String, AttrValue)]
 
 data Node = Node String Attrs [Node]
           | Text String
@@ -79,7 +80,7 @@ jsxOpeningElement = do
 
 jsxNodeAttrs :: Parsec String u Attrs
 jsxNodeAttrs = do
-  many jsxNodeAttr
+  try jsxSplicedAttrMap <|> (StaticAttrs <$> many jsxNodeAttr)
 
 
 jsxNodeAttr :: Parsec String u (String, AttrValue)
@@ -107,6 +108,11 @@ jsxSplicedValue :: Parsec String u AttrValue
 jsxSplicedValue = do
   name <- between (char '{') (char '}') $ many (noneOf "}")
   return $ ExprVal name
+
+jsxSplicedAttrMap :: Parsec String u Attrs
+jsxSplicedAttrMap = do
+  name <- between (string "{{") (string "}}") $ many (noneOf "}")
+  return $ SplicedAttrs name
 
 jsxClosingElement :: String -> Parsec String u ()
 jsxClosingElement ele = do

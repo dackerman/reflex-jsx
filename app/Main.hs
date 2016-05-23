@@ -23,7 +23,8 @@ main = mainWidget $ do
         text "This is a widget bound at compile time!"
         i <- textInput def
         dynText $ _textInput_value i
-        [jsx|<div style="color:white">this is another quasiquoted thing!!!</div>|]
+        dynAttrs <- mapDyn (\s -> Map.singleton "style" ("color:" ++ s)) $ _textInput_value i
+        [jsx|<div {{dynAttrs}}>this is another quasiquoted thing!!!</div>|]
 
   [jsx|
       <div class="blah" style="background-color:red">
