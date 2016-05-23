@@ -15,6 +15,7 @@ import Reflex.Dom hiding (Widget, Attrs)
 
 import JSXParser
 
+
 jsx :: QuasiQuoter
 jsx = QuasiQuoter
   { quoteExp = quoteJsxExpression
@@ -51,7 +52,7 @@ outputNode tag attrs children =
       Left error -> fail error
       Right exp -> [| elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
 
---                                     (String, String)
+
 toStringAttr :: (String, AttrValue) -> TH.ExpQ
 toStringAttr (key, value) = case value of
   TextVal content -> [| (key, content) |]

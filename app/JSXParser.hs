@@ -1,5 +1,3 @@
-{-# LANGUAGE DeriveDataTypeable #-}
-
 module JSXParser
        ( jsxParser
        , parseJsx
@@ -15,15 +13,19 @@ import Reflex.Dom (MonadWidget)
 
 import Data.Typeable
 import Data.Data
+
 import qualified Data.Map as Map
 
 import Control.Applicative ((<|>))
 
+
 data AttrValue = TextVal String
                | ExprVal String
 
+
 data Attrs = SplicedAttrs String
            | StaticAttrs [(String, AttrValue)]
+
 
 data Node = Node String Attrs [Node]
           | Text String
@@ -83,6 +85,12 @@ jsxNodeAttrs = do
   try jsxSplicedAttrMap <|> (StaticAttrs <$> many jsxNodeAttr)
 
 
+jsxSplicedAttrMap :: Parsec String u Attrs
+jsxSplicedAttrMap = do
+  name <- between (string "{...") (string "}") $ many (noneOf "}")
+  return $ SplicedAttrs name
+
+
 jsxNodeAttr :: Parsec String u (String, AttrValue)
 jsxNodeAttr = do
   key <- jsxAttributeName
@@ -104,15 +112,12 @@ jsxQuotedValue = do
   contents <- between (char '"') (char '"') $ many (noneOf "\"")
   return $ TextVal contents
 
+
 jsxSplicedValue :: Parsec String u AttrValue
 jsxSplicedValue = do
   name <- between (char '{') (char '}') $ many (noneOf "}")
   return $ ExprVal name
 
-jsxSplicedAttrMap :: Parsec String u Attrs
-jsxSplicedAttrMap = do
-  name <- between (string "{{") (string "}}") $ many (noneOf "}")
-  return $ SplicedAttrs name
 
 jsxClosingElement :: String -> Parsec String u ()
 jsxClosingElement ele = do
@@ -132,16 +137,19 @@ jsxText = do
   contents <- many1 $ noneOf "{<>}"
   return $ Text contents
 
+
 jsxFreeVar :: Parsec String u Node
 jsxFreeVar = do
   freeVar <- between (char '{') (char '}') $ many (noneOf "}")
   return $ FreeVar freeVar
+
 
 haskellVariableName :: Parsec String u String
 haskellVariableName = do
   first <- letter
   rest <- many alphaNum
   return $ first : rest
+
 
 jsxElementName :: Parsec String u String
 jsxElementName = do
@@ -153,37 +161,3 @@ jsxIdentifier = do
   name <- many1 alphaNum
   spaces
   return name
-
--- <div class="consumed-food">
---   <div class="line">
---     <div class="stats">
---       <span class="food-name">$name</span>
---       <div class="calories">
---         ${nutritionData (calories nutrition) "cals"}
---       </div>
---     </div>
---     ${macrosPie nutrition 50}
---   </div>
---   <div class="line">
---     <div class="macros">
---       ${nutritionData (proteinGrams nutrition) "protein (g)"}
---       ${nutritionData (fatGrams nutrition) "fat (g)"}
---       ${nutritionData (carbGrams nutrition) "carbs (g)"}
---     </div>
---   </div>
--- </div>
-
--- consumedFoodView :: MonadWidget t m => ConsumedFood -> m ()
--- consumedFoodView (ConsumedFood id name nutrition amount) = do
---   elClass "div" "consumed-food" $ do
---     elClass "div" "line" $ do
---       elClass "div" "stats" $ do
---         elClass "span" "food-name" $ text name
---         elClass "div" "calories" $ do
---           nutritionData (calories nutrition) "cals"
---       macrosPie nutrition 50
---     elClass "div" "line" $ do
---       elClass "div" "macros" $ do
---         nutritionData (proteinGrams nutrition) "protein (g)"
---         nutritionData (fatGrams nutrition) "fat (g)"
---         nutritionData (carbGrams nutrition) "carbs (g)"

@@ -24,7 +24,7 @@ main = mainWidget $ do
         i <- textInput def
         dynText $ _textInput_value i
         dynAttrs <- mapDyn (\s -> Map.singleton "style" ("color:" ++ s)) $ _textInput_value i
-        [jsx|<div {{dynAttrs}}>this is another quasiquoted thing!!!</div>|]
+        [jsx|<div {...dynAttrs}>this is another quasiquoted thing!!!</div>|]
 
   [jsx|
       <div class="blah" style="background-color:red">
