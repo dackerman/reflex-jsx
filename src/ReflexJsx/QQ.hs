@@ -4,7 +4,6 @@ module ReflexJsx.QQ
        ( jsx
        ) where
 
-import Data.Generics
 import qualified Language.Haskell.TH as TH
 import Language.Haskell.TH.Quote
 import Language.Haskell.Meta (parseExp)
@@ -15,7 +14,7 @@ import qualified Data.Map as Map
 
 import Reflex.Dom hiding (Widget, Attrs)
 
-import JSXParser
+import ReflexJsx.Parser
 
 
 jsx :: QuasiQuoter
@@ -38,9 +37,9 @@ outputWidgetCode node =
   case node of
     Node tag attrs children -> outputNode tag attrs children
     Text content -> [| text content |]
-    FreeVar varName -> case parseExp varName of
-      Left error -> fail error
-      Right exp -> return exp
+    SplicedNode varName -> do
+      let Right exp = parseExp varName
+      return exp
 
 
 outputNode :: String -> Attrs -> [Node] -> TH.ExpQ
@@ -50,14 +49,14 @@ outputNode tag attrs children =
     StaticAttrs staticAttrs ->
       let stringAttrs = TH.listE $ List.map toStringAttr staticAttrs
       in [| elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
-    SplicedAttrs attrExpr -> case parseExp attrExpr of
-      Left error -> fail error
-      Right exp -> [| elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
+    SplicedAttrs attrExpr -> do
+      let Right exp = parseExp attrExpr
+      [| elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
 
 
 toStringAttr :: (String, AttrValue) -> TH.ExpQ
 toStringAttr (key, value) = case value of
   TextVal content -> [| (key, content) |]
-  ExprVal exprString -> case parseExp exprString of
-    Left error -> fail error
-    Right exp -> [| (key, $(return exp)) |]
+  ExprVal exprString -> do
+    let Right exp = parseExp exprString
+    [| (key, $(return exp)) |]

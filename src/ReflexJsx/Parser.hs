@@ -6,12 +6,7 @@ module ReflexJsx.Parser
        ) where
 
 import Text.Parsec (runParser, Parsec, try, eof, many, many1, between)
-import Text.Parsec.Char (char, letter, noneOf, string, anyChar, alphaNum, spaces)
-
-import Reflex.Dom (MonadWidget)
-
-import Data.Typeable
-import Data.Data
+import Text.Parsec.Char (char, letter, noneOf, string, alphaNum, spaces)
 
 import qualified Data.Map as Map
 
@@ -28,7 +23,7 @@ data Attrs = SplicedAttrs String
 
 data Node = Node String Attrs [Node]
           | Text String
-          | FreeVar String
+          | SplicedNode String
 
 
 parseJsx :: Monad m => String -> m Node
@@ -42,10 +37,6 @@ parseJsx s =
           spaces
           eof
           return node
-
-
-jsxParser :: Parsec String u Node
-jsxParser = jsxElement
 
 
 jsxElement :: Parsec String u Node
@@ -72,10 +63,10 @@ jsxNormalElement = do
 
 jsxOpeningElement :: Parsec String u (String, Attrs)
 jsxOpeningElement = do
-  char '<'
+  _ <- char '<'
   name <- jsxElementName
   attrs <- jsxNodeAttrs
-  char '>'
+  _ <- char '>'
   return (name, attrs)
 
 
@@ -128,7 +119,7 @@ jsxClosingElement ele = do
 
 jsxChild :: Parsec String u Node
 jsxChild = do
-  try jsxText <|> try jsxFreeVar <|> try jsxElement
+  try jsxText <|> try jsxSplicedNode <|> try jsxElement
 
 
 jsxText :: Parsec String u Node
@@ -137,22 +128,14 @@ jsxText = do
   return $ Text contents
 
 
-jsxFreeVar :: Parsec String u Node
-jsxFreeVar = do
-  freeVar <- between (char '{') (char '}') $ many (noneOf "}")
-  return $ FreeVar freeVar
-
-
-haskellVariableName :: Parsec String u String
-haskellVariableName = do
-  first <- letter
-  rest <- many alphaNum
-  return $ first : rest
+jsxSplicedNode :: Parsec String u Node
+jsxSplicedNode = do
+  exprString <- between (char '{') (char '}') $ many (noneOf "}")
+  return $ SplicedNode exprString
 
 
 jsxElementName :: Parsec String u String
-jsxElementName = do
-  jsxIdentifier
+jsxElementName = jsxIdentifier
 
 
 jsxIdentifier :: Parsec String u String
