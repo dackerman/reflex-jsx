@@ -1,5 +1,7 @@
 # Reflex JSX
 
+![Travis Status](https://travis-ci.org/dackerman/reflex-jsx.svg)
+
 `reflex-jsx` is a relatively simple quasiquoter that lets you write
 html-like syntax inside of a reflex `MonadWidget t m` instance.
 
@@ -102,7 +104,7 @@ consumedFoodView (ConsumedFood id name nutrition amount) =
 ```
 
 Or, take a look at the syntax-highlighted version in Emacs if you tweak your
-`haskell-mode` slightly. ![JSX syntax-highlighted](/images/jsx-highlighted.png)
+`haskell-mode` slightly. ![JSX syntax-highlighted](https://raw.githubusercontent.com/dackerman/reflex-jsx/master/images/jsx-highlighted.png)
 
 Notice we have a component that takes in a `ConsumedFood` with some values, and
 splices them into the jsx body. First we have `{text name}`, which is using the
