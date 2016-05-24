@@ -2,7 +2,21 @@ name:                reflex-jsx
 version:             0.1.0.0
 stability:           Experimental
 synopsis:            Use jsx-like syntax in Reflex
-description:
+description:         `reflex-jsx` is a library for writing jsx-like syntax in
+                     reflex code. This can be useful for situations where you
+                     have a large block of HTML with some styles, and it would
+                     be easier to read as actual HTML than various reflex
+                     functions.
+
+                     It's implemented as a "QuasiQuoter", so you just import the
+                     `jsx` function from ReflexJsx and generate the equivalent
+                     functions that would run inside of a "MonadWidget t m".
+
+                     Not only can you generate a block of static HTML/CSS, but you
+                     can also splice in your own nodes that implement
+                     "MonadWidget t m", string attribute values, or even entire
+                     dynamic attribute maps.
+
 homepage:            https://github.com/dackerman/reflex-jsx
 bug-reports:         https://github.com/dackerman/reflex-jsx/issues
 license:             BSD3
