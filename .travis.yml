@@ -3,9 +3,7 @@ script:
   - git config --global user.email "travis-ci@example.com"
   - git config --global user.name "Travis-CI"
   - git clone https://github.com/reflex-frp/reflex-platform ../reflex-platform
-  - ../reflex-platform/work-on ghcjs ../reflex-jsx
-  - cabal configure --ghcjs
-  - cabal build
+  - ../reflex-platform/work-on ghcjs ../reflex-jsx --command "cabal configure --ghcjs && cabal build"
 
 cache:
   directories:
