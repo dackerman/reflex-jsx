@@ -1,6 +1,6 @@
 # Reflex JSX
 
-![Travis Status](https://travis-ci.org/dackerman/reflex-jsx.svg)
+[![Travis Status](https://travis-ci.org/dackerman/reflex-jsx.png)](https://travis-ci.org/dackerman/reflex-jsx)
 
 `reflex-jsx` is a relatively simple quasiquoter that lets you write
 html-like syntax inside of a reflex `MonadWidget t m` instance.
