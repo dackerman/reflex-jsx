@@ -1,3 +1,9 @@
+{-| The Parser for the reflex-jsx language
+
+    Given a "String", @parseJsx@ outputs the AST for the language. Note that at
+    this point, we capture spliced expressions from the meta-language as
+    Strings, and parse them during the quasiquoting phase in @ReflexJsx.QQ@
+-}
 module ReflexJsx.Parser
        ( parseJsx
        , Node(..)

@@ -1,3 +1,9 @@
+{-| The Quasiquoter for the reflex-jsx language
+
+    The only import you need is "jsx", which is the quasiquoter. See the README
+    for more information.
+-}
+
 {-# LANGUAGE TemplateHaskell #-}
 
 module ReflexJsx.QQ
@@ -17,7 +23,10 @@ import ReflexJsx.Parser
 
 import Prelude hiding (exp)
 
+{-| Quasiquoter for jsx-like expressions
 
+    Used like "[jsx| <div /> |]"
+-}
 jsx :: QuasiQuoter
 jsx = QuasiQuoter
   { quoteExp = quoteJsxExpression
