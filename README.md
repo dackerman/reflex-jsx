@@ -2,8 +2,29 @@
 
 [![Travis Status](https://travis-ci.org/dackerman/reflex-jsx.png)](https://travis-ci.org/dackerman/reflex-jsx)
 
-`reflex-jsx` is a relatively simple quasiquoter that lets you write
+`reflex-jsx` is a parser and quasiquoter that lets you write
 html-like syntax inside of a reflex `MonadWidget t m` instance.
+
+What's reflex, you ask?  In short, it's a
+[Functional Reactive Programming](https://en.wikipedia.org/wiki/Functional_reactive_programming)
+library in Haskell that compiles to JavaScript for use on
+websites. You'd use it anywhere you might otherwise use
+[React](https://facebook.github.io/react/) or
+[Angular](https://angular.io/).
+
+Here's a quick motivating example. The following code shows a Github
+badge based on the username you enter, updated as you type.
+
+![Demo of github profile viewer](https://thumbs.gfycat.com/UntriedUnluckyAlabamamapturtle-size_restricted.gif)
+
+In regular Reflex, here's what the code looks like (leaving out data
+types and the XHR)
+
+![reflex example](images/regular-reflex-code.png)
+
+Here's what that same widget looks like with `reflex-jsx`:
+
+![reflex-jsx example](images/reflex-jsx-code.png)
 
 ## Usage
 
