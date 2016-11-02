@@ -54,14 +54,18 @@ outputWidgetCode node =
 
 outputNode :: String -> Attrs -> [Node] -> TH.ExpQ
 outputNode tag attrs children =
-  let renderedChildren = TH.listE $ List.map outputWidgetCode children
-  in case attrs of
+  case attrs of
     StaticAttrs staticAttrs ->
       let stringAttrs = TH.listE $ List.map toStringAttr staticAttrs
-      in [| Dom.elAttr tag (Map.fromList $(stringAttrs)) $ sequence_ $(renderedChildren) |]
+      in [| Dom.elAttr tag (Map.fromList $(stringAttrs)) $(go renderedChildren) |]
     SplicedAttrs attrExpr -> do
       let Right exp = parseExp attrExpr
-      [| Dom.elDynAttr tag $(return exp) $ sequence_ $(renderedChildren) |]
+      [| Dom.elDynAttr tag $(return exp) $(go renderedChildren) |]
+  where
+    go [] = [| return () |]
+    go (c:cs) = [| (,) <$> $(c) <*> $(go cs)|]
+    renderedChildren = outputWidgetCode <$> children
+
 
 
 toStringAttr :: (String, AttrValue) -> TH.ExpQ
