@@ -11,11 +11,15 @@ module ReflexJsx.QQ
        ) where
 
 import qualified Language.Haskell.TH as TH
+import Language.Haskell.TH (newName, mkName, Exp(LamE, RecConE, RecUpdE, VarE), Pat(VarP))
 import Language.Haskell.TH.Quote
 import Language.Haskell.Meta (parseExp)
 
 import qualified Data.List as List
 import qualified Data.Map as Map
+
+import Debug.Trace
+import Control.Exception (assert)
 
 import qualified Reflex.Dom as Dom
 
@@ -46,10 +50,15 @@ outputWidgetCode :: Node -> TH.ExpQ
 outputWidgetCode node =
   case node of
     Node tag attrs children -> outputNode tag attrs children
-    Text content -> [| Dom.text content |]
+    Text content -> [| do {Dom.text content; return []} |]
     SplicedNode name expression -> do
       let Right exp = parseExp expression
-      return exp
+      fieldValue <- newName "x"
+      lamName <- newName "b"
+      let setField = LamE [VarP lamName] (RecConE lamName [(mkName name, VarE fieldValue)])
+      let simField = LamE [VarP lamName] (RecUpdE (VarE lamName) [(mkName name, VarE fieldValue)])
+      --[| do { $(pure $ VarP fieldValue) <- $(pure exp); return [$(pure setField)] } |]
+      [| do { $(pure $ VarP fieldValue) <- $(pure exp); return [$(pure simField)] } |]
 
 
 outputNode :: String -> Attrs -> [Node] -> TH.ExpQ
@@ -62,8 +71,8 @@ outputNode tag attrs children =
       let Right exp = parseExp attrExpr
       [| Dom.elDynAttr tag $(return exp) $(go renderedChildren) |]
   where
-    go [] = [| return () |]
-    go (c:cs) = [| (,) <$> $(c) <*> $(go cs)|]
+    go [] = [| return [] |]
+    go (c:cs) = [| (++) <$> $(c) <*> $(go cs)|]
     renderedChildren = outputWidgetCode <$> children
 
 

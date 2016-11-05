@@ -134,13 +134,15 @@ jsxText = do
 
 jsxSplicedNode :: Parsec String u Node
 jsxSplicedNode = do
-  name <- traceShowId <$> jsxNodeValueName
+  name <- jsxNodeValueName
   exprString <- manyTill anyChar (try (char '}'))
   return $ SplicedNode name exprString
 
 
 jsxNodeValueName :: Parsec String u String
-jsxNodeValueName = between (char '{') (char '@') $ many (noneOf "@")
+jsxNodeValueName = do
+  name <- between (char '{') (char '@') $ many (noneOf "@")
+  return name
 
 
 jsxElementName :: Parsec String u String
