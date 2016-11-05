@@ -173,6 +173,13 @@ change color.
 
 ## FAQs
 
+### Failed to load interface for `Gtk2HsSetup`
+
+This is due to the following issue:
+https://github.com/gtk2hs/gtk2hs/issues/179 .
+
+The fix is to run `stack install gtk2hs-buildtools`.
+
 ### Is this the same JSX as React's version?
 
 The name comes from React's JSX, but it's not trying to be feature-for-feature
