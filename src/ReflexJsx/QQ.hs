@@ -47,8 +47,8 @@ outputWidgetCode node =
   case node of
     Node tag attrs children -> outputNode tag attrs children
     Text content -> [| Dom.text content |]
-    SplicedNode varName -> do
-      let Right exp = parseExp varName
+    SplicedNode name expression -> do
+      let Right exp = parseExp expression
       return exp
 
 

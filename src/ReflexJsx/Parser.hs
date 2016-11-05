@@ -12,7 +12,9 @@ module ReflexJsx.Parser
        ) where
 
 import Text.Parsec (runParser, Parsec, try, eof, many, many1, between)
-import Text.Parsec.Char (char, letter, noneOf, string, alphaNum, spaces)
+import Text.Parsec.Char (char, anyChar, letter, noneOf, string, alphaNum, spaces)
+import Text.Parsec.Combinator (manyTill)
+import Debug.Trace
 
 import Control.Applicative ((<|>))
 
@@ -27,7 +29,7 @@ data Attrs = SplicedAttrs String
 
 data Node = Node String Attrs [Node]
           | Text String
-          | SplicedNode String
+          | SplicedNode String String
 
 
 parseJsx :: Monad m => String -> m Node
@@ -132,8 +134,13 @@ jsxText = do
 
 jsxSplicedNode :: Parsec String u Node
 jsxSplicedNode = do
-  exprString <- between (char '{') (char '}') $ many (noneOf "}")
-  return $ SplicedNode exprString
+  name <- traceShowId <$> jsxNodeValueName
+  exprString <- manyTill anyChar (try (char '}'))
+  return $ SplicedNode name exprString
+
+
+jsxNodeValueName :: Parsec String u String
+jsxNodeValueName = between (char '{') (char '@') $ many (noneOf "@")
 
 
 jsxElementName :: Parsec String u String
