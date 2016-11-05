@@ -55,10 +55,8 @@ outputWidgetCode node =
       let Right exp = parseExp expression
       fieldValue <- newName "x"
       lamName <- newName "b"
-      let setField = LamE [VarP lamName] (RecConE lamName [(mkName name, VarE fieldValue)])
-      let simField = LamE [VarP lamName] (RecUpdE (VarE lamName) [(mkName name, VarE fieldValue)])
-      --[| do { $(pure $ VarP fieldValue) <- $(pure exp); return [$(pure setField)] } |]
-      [| do { $(pure $ VarP fieldValue) <- $(pure exp); return [$(pure simField)] } |]
+      let setField = LamE [VarP lamName] (RecUpdE (VarE lamName) [(mkName name, VarE fieldValue)])
+      [| do { $(pure $ VarP fieldValue) <- $(pure exp); return [$(pure setField)] } |]
 
 
 outputNode :: String -> Attrs -> [Node] -> TH.ExpQ
