@@ -45,6 +45,15 @@ library
                      , text
   default-language:    Haskell2010
 
+test-suite test
+  hs-source-dirs:      test
+  type:                exitcode-stdio-1.0
+  main-is:             Main.hs
+  ghc-options:         -Wall -fwarn-tabs -ferror-spans
+  build-depends:       base >= 4.8 && < 5
+                     , reflex
+                     , reflex-dom
+                     , reflex-jsx
 
 source-repository head
   type:     git
