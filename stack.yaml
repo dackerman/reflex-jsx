@@ -1,14 +1,29 @@
-flags: {}
-extra-package-dbs: []
 packages:
 - '.'
+- location:
+    git: https://github.com/ryantrinkle/reflex.git
+    commit: 64902eaa55b8fc5d1457c06d69ae41cbd11daaa5
+  extra-dep: true
+- location:
+    git: https://github.com/ryantrinkle/reflex-dom.git
+    commit: 083977ea24e223c339626f52054222a7497a279b
+  extra-dep: true
+- location:
+     git: https://github.com/isomorphism/these.git
+     commit: b3d74b7a5a68349489ad4079f85e79b6a5c34538
+- location:
+     git: https://github.com/ghcjs/ghcjs-base.git
+     commit: dd7034ef8582ea8a175a71a988393a9d1ee86d6f
+  extra-dep: true
+
 extra-deps:
-- aeson-0.9.0.1
-- haskell-src-exts-1.16.0.1
-- parsec-3.1.9
-- ref-tf-0.4
-- reflex-0.4.0
-- reflex-dom-0.3
-- syb-0.5.1
-- text-1.2.2.1
-resolver: nightly-2016-05-17
+  - ref-tf-0.4.0.1
+  - ghcjs-dom-0.2.4.0
+  - zenc-0.1.1
+  - dlist-0.7.1.2
+  - webkitgtk3-javascriptcore-0.13.2.0
+resolver: lts-7.4
+
+# There is no nix support for GHCJS
+nix:
+    enable: false
