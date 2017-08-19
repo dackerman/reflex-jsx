@@ -11,15 +11,12 @@ module ReflexJsx.QQ
        ) where
 
 import qualified Language.Haskell.TH as TH
-import Language.Haskell.TH (newName, mkName, Exp(LamE, RecConE, RecUpdE, VarE), Pat(VarP))
+import Language.Haskell.TH (Dec(DataD), newName, mkName, Type(ConT), Exp(LamE, RecConE, RecUpdE, VarE), Pat(VarP))
 import Language.Haskell.TH.Quote
 import Language.Haskell.Meta (parseExp)
 
 import qualified Data.List as List
 import qualified Data.Map as Map
-
-import Debug.Trace
-import Control.Exception (assert)
 
 import qualified Reflex.Dom as Dom
 
@@ -42,9 +39,33 @@ jsx = QuasiQuoter
 
 quoteJsxExpression :: String -> TH.ExpQ
 quoteJsxExpression str = do
-  exp <- parseJsx str
-  outputWidgetCode exp
+  jsx <- parseJsx str
+  outputJsxCode jsx
 
+
+outputJsxCode :: Jsx -> TH.ExpQ
+outputJsxCode (Jsx node) = do
+  --let outTypeName = newName "JsxOutput"
+  --let outType = pure $ ConT outTypeName
+  --let fields = lookupFields node
+  --let recordTypeConstructor = RecC outTypeName (L.map makeFieldType fields)
+  --addTopDecls [DataD [] outTypeName [] Nothing [recordTypeConstructor] []]
+  [| \ds -> do
+      results <- $(outputWidgetCode node)
+      return $ foldl (\out f -> f out) ds results
+   |]
+
+--regBang = Bang NoSourceUnpackedness NoSourceStrictness
+--
+--makeFieldType :: (String, String) -> VarBangType
+--makeFieldType (name, exp) = do
+--  let Right exp = parseExp expression
+--  
+--
+--lookupFields :: Node -> [(String, String)]
+--lookupFields (Node _ _ children) = List.foldl' (++) [] $ List.map lookupFields children
+--lookupFields (Text _) = []
+--lookupFields (SplicedNode name expr) = [(name, expr)]
 
 outputWidgetCode :: Node -> TH.ExpQ
 outputWidgetCode node =

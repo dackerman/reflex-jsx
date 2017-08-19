@@ -6,6 +6,7 @@
 -}
 module ReflexJsx.Parser
        ( parseJsx
+       , Jsx(..)
        , Node(..)
        , Attrs(..)
        , AttrValue(..)
@@ -18,6 +19,8 @@ import Debug.Trace
 
 import Control.Applicative ((<|>))
 
+
+data Jsx = Jsx Node
 
 data AttrValue = TextVal String
                | ExprVal String
@@ -32,7 +35,7 @@ data Node = Node String Attrs [Node]
           | SplicedNode String String
 
 
-parseJsx :: Monad m => String -> m Node
+parseJsx :: Monad m => String -> m Jsx
 parseJsx s =
   case runParser p () "" s of
     Left err -> fail $ show err
@@ -42,7 +45,7 @@ parseJsx s =
           node <- jsxElement
           spaces
           eof
-          return node
+          return $ Jsx node
 
 
 jsxElement :: Parsec String u Node
