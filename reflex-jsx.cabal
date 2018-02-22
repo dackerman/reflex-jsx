@@ -29,6 +29,9 @@ build-type:          Simple
 cabal-version:       >=1.10
 tested-with:         GHC == 7.10.2
 
+extra-source-files:
+  README.md
+
 library
   hs-source-dirs:      src
   exposed-modules:     ReflexJsx
